@@ -1,11 +1,16 @@
 {:paths ["src"]
- ;; No dependencies at all — this is the bottom of the protocol stack.
+ ;; src has no dependencies at all — this is the bottom of the stack.
+ ;; The kotobase dependency below is TEST-ONLY: the suites use
+ ;; kotobase.local's LocalStore as their oracle. No namespace under src/
+ ;; requires it — verified by grep at the 2026-08-05 split.
  :deps {}
  ;; First-class runtime is nbb/cljs (repo-wide runtime priority):
- ;;   nbb --classpath "src:test" bin/run_tests.cljs
+ ;;   nbb --classpath "src:test:<kotobase>/src" bin/run_tests.cljs
  :aliases
  {:test {:extra-paths ["test"]
-         :extra-deps {io.github.cognitect-labs/test-runner
+         :extra-deps {io.github.kotoba-lang/kotobase
+                      {:git/sha "bbf57df9dde5c1869182012860129a598382e088"}
+                      io.github.cognitect-labs/test-runner
                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
          :main-opts ["-m" "cognitect.test-runner"]
          :exec-fn cognitect.test-runner.api/test}}}

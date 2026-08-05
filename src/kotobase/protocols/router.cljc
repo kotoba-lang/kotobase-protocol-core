@@ -1,42 +1,60 @@
 (ns kotobase.protocols.router
   "Host-based dispatch for the kotobase protocol surfaces
-  (ADR-2607171700, split per ADR-2608051000):
+  (ADR-2607171700; split into per-capability repos by ADR-2608051000).
 
-    s3.<apex>       → the :s3 handler
-    ipfs.<apex>     → the :ipfs handler
-    atproto.<apex>  → the :atproto handler
-    git.<apex>      → the :git handler
+    s3.<apex>       → the \"s3\" handler
+    ipfs.<apex>     → the \"ipfs\" handler
+    atproto.<apex>  → the \"atproto\" handler
+    git.<apex>      → the \"git\" handler
+    pinning.<apex>  → the \"pinning\" handler
+    issues.<apex>   → the \"issues\" handler
 
-  plus a single-origin fallback for deploys that only own one
-  hostname: /ipfs/* and /xrpc/* dispatch by their protocol-inherent
-  prefixes, /s3/* and /git/* by stripped mount prefixes.
+  plus a single-origin fallback for deploys that own one hostname.
 
-  **Handlers are injected, not required.** Before the ADR-2608051000
-  split this namespace `:require`d s3/ipfs/atproto/git directly, which
-  is why the four surfaces could not live in separate repositories: the
-  router is what tied them together at compile time. Now the caller
-  supplies `:surfaces` (a map of label → handler) and, optionally,
-  `:prefixes`; a surface that is absent from the map simply is not
-  served, which is exactly what a per-capability deploy shell wants.
+  ## Every surface is injected — core has no built-in table
 
-  A shell that serves exactly one host does not need this namespace at
-  all — it can call its one handler directly. The router exists for the
-  combined deployment and for self-hosted mesh peers, where the apex is
-  injectable so the same code serves any domain."
+  Upstream `kotobase-protocols` kept a `surfaces` def that `:require`d
+  s3/ipfs/atproto/git/ipfs-pinning/issue directly and merged shell-injected
+  surfaces *under* it. That table is exactly what prevented the surfaces from
+  living in separate repositories: it made the router a compile-time consumer
+  of all six.
+
+  Here the table is empty and `ctx :surfaces` is the whole registry. The
+  contract is otherwise **unchanged and deliberately so** — labels are
+  strings, `:path-surfaces` is `{prefix label}`, injected mounts are checked
+  before the built-in prefixes and are *not* stripped — so a deploy shell can
+  move between the facade and this repo by changing a dependency, not a call.
+
+  A shell that owns exactly one host does not need this namespace at all; it
+  can call its one handler directly. This exists for combined deployments and
+  for self-hosted mesh peers, where `:apex` is injectable so the same code
+  serves any domain.
+
+  A surface absent from `:surfaces` is not served — including its `/health`,
+  so a shell never advertises readiness for a capability it does not carry."
   (:require [clojure.string :as str]
             [kotobase.protocols.http :as http]))
 
 (def ^:private default-prefixes
-  "Ordered fallbacks for a single-origin deploy. Each entry is
-  [path-prefix surface-label strip?] — strip? drops the mount prefix
-  before handing the request on, which /s3 and /git need because their
-  wire formats are rooted at the mount point, while /ipfs and /xrpc
-  carry protocol-inherent prefixes their handlers expect to see."
-  [["/ipfs/" :ipfs false]
-   ["/ipns/" :ipfs false]
-   ["/xrpc/" :atproto false]
-   ["/s3/"   :s3   true]
-   ["/git/"  :git  true]])
+  "Single-origin fallbacks, as [prefix label strip?].
+
+  `strip?` drops the mount prefix before the handler sees it, which /s3,
+  /git and /issues need because their wire formats are rooted at the mount
+  point. /ipfs, /ipns, /xrpc and /pins carry protocol-inherent prefixes their
+  handlers expect to receive intact."
+  [["/ipfs/"   "ipfs"    false]
+   ["/ipns/"   "ipfs"    false]
+   ["/xrpc/"   "atproto" false]
+   ["/pins"    "pinning" false]
+   ["/s3/"     "s3"      true]
+   ["/git/"    "git"     true]
+   ["/issues/" "issues"  true]])
+
+(defn surfaces-for
+  "Every surface this request may reach. Unlike the facade's version there is
+  nothing to merge with: the shell's `:surfaces` is the registry."
+  [ctx]
+  (or (:surfaces ctx) {}))
 
 (defn surface-of
   "\"s3.kotobase.net\" + apex \"kotobase.net\" → \"s3\"; nil when host
@@ -50,40 +68,43 @@
 (defn- strip-prefix [req prefix]
   (assoc req :path (subs (:path req) (count prefix))))
 
+(defn- mounted
+  "A shell-injected single-origin mount, checked before the built-in
+  prefixes so a shell can mount /sparql or /cypher on the one hostname it
+  owns. The prefix is NOT stripped: those protocols specify their own
+  absolute paths (SPARQL 1.1 Protocol, Neo4j's
+  /db/data/transaction/commit) and stripping would break the handlers'
+  own path checks."
+  [ctx req]
+  (let [all (surfaces-for ctx)
+        path (or (:path req) "")]
+    (some (fn [[prefix label]]
+            (when (str/starts-with? path prefix)
+              (when-let [h (get all label)] (h ctx req))))
+          (:path-surfaces ctx))))
+
 (defn handle
-  "Route `req` to its protocol surface.
-
-  ctx: {:store ... :now ... :apex \"kotobase.net\"
-        :surfaces {:s3 f :ipfs f :atproto f :git f}
-        :prefixes [[\"/s3/\" :s3 true] ...]}
-
-  `:surfaces` keys are keywords; the host label is matched against
-  their names. Only the surfaces present are served — /health included,
-  so a shell does not advertise readiness for a surface it does not
-  carry."
-  [{:keys [apex surfaces prefixes] :or {apex "kotobase.net"} :as ctx} req]
+  "Route `req` to its protocol surface. ctx: {:store ... :now ...
+  :apex \"kotobase.net\" :surfaces {label handler} :path-surfaces
+  {prefix label}}."
+  [{:keys [apex] :or {apex "kotobase.net"} :as ctx} req]
   (let [path (or (:path req) "")
-        prefixes (or prefixes default-prefixes)
-        label (surface-of (:host req) apex)
-        surface (when label (get surfaces (keyword label)))]
-    (cond
-      (and (= :get (:method req)) (= "/health" path) surface)
+        all (surfaces-for ctx)
+        surface (surface-of (:host req) apex)]
+    (if (and (= :get (:method req)) (= "/health" path) (contains? all surface))
       (http/response 200
                      {"content-type" "application/edn; charset=utf-8"
                       "cache-control" "no-store"}
-                     (pr-str {:ok true
-                              :service (keyword (str "kotobase.protocols/" label))
-                              :surface (keyword label)
-                              :apex apex}))
-
-      surface (surface ctx req)
-
-      :else
-      (if-let [[prefix k strip?] (first (filter (fn [[p k _]]
-                                                  (and (str/starts-with? path p)
-                                                       (get surfaces k)))
-                                                prefixes))]
-        ((get surfaces k) ctx (if strip?
-                                (strip-prefix req (subs prefix 0 (dec (count prefix))))
-                                req))
-        (http/not-found "no protocol surface for this host/path")))))
+                     (pr-str {:ok true :service (keyword (str "kotobase.protocols/" surface))
+                              :surface (keyword surface) :apex apex}))
+      (if-let [handler (get all surface)]
+        (handler ctx req)
+        (or (mounted ctx req)
+            (if-let [[prefix label strip?]
+                     (first (filter (fn [[p l _]]
+                                      (and (str/starts-with? path p) (get all l)))
+                                    default-prefixes))]
+              ((get all label) ctx (if strip?
+                                     (strip-prefix req (subs prefix 0 (dec (count prefix))))
+                                     req))
+              (http/not-found "no protocol surface for this host/path")))))))

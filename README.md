@@ -1,53 +1,53 @@
 # kotobase-protocol-core
 
-**The shared bottom of the kotobase protocol stack: HTTP request/response data, JSON, ETag fingerprints, the content-addressed block space, a memory store, and a registry-driven router.**
+**The shared bottom of the kotobase protocol stack for kotobase.** HTTP request/response data, JSON, ETag fingerprints, CIDs, the content-addressed block space, a memory store, and a registry-only router.
 
 Split out of [`kotobase-protocols`](https://github.com/kotoba-lang/kotobase-protocols)
-by superproject ADR-2608051000 (`1 repo = 1 capability`). Every surface repo
-(`kotobase-protocol-{s3,ipfs,atproto,git}`) depends on this one and on nothing
-else; surface repos never depend on each other.
+by superproject ADR-2608051000 (`1 repo = 1 capability`), from that repo's
+`main` tip.
 
 | namespace | what it owns |
 |---|---|
 | `kotobase.protocols.http` | ring-shaped request/response as plain data |
-| `kotobase.protocols.json` | dependency-free JSON encode/parse (cljc, string keys preserved) |
+| `kotobase.protocols.json` | dependency-free JSON encode/parse |
 | `kotobase.protocols.hash` | FNV fingerprint for ETags — **not** cryptographic, **not** a CID |
-| `kotobase.protocols.blocks` | shared content-addressed block space (CID is the key; it does not mint them) |
+| `kotobase.protocols.cid` | CID handling |
+| `kotobase.protocols.blocks` | shared content-addressed block space |
 | `kotobase.protocols.store` | source-local deterministic memory host |
-| `kotobase.protocols.router` | host-label dispatch with single-origin prefix fallback |
+| `kotobase.protocols.router` | host-label dispatch, registry-only |
 
-## The router takes its handlers, it does not require them
+## The router has no built-in surface table
 
-Before the split, `router` `:require`d s3/ipfs/atproto/git directly. That single
-namespace is the reason the four surfaces could not live in separate
-repositories — the router tied them together at compile time. It is now a
-registry:
+Upstream `kotobase-protocols` kept a `surfaces` def that `:require`d
+s3/ipfs/atproto/git/ipfs-pinning/issue directly. **That table is what
+prevented the surfaces from living in separate repositories** — it made the
+router a compile-time consumer of all six.
 
-```clojure
-(require '[kotobase.protocols.router :as router]
-         '[kotobase.protocols.s3 :as s3])
+Here the table is empty and `ctx :surfaces` is the whole registry. The
+contract is otherwise unchanged and deliberately so — labels are strings,
+`:path-surfaces` is `{prefix label}`, injected mounts are checked before the
+built-in prefixes and are *not* stripped — so a deploy shell moves between
+the facade and this repo by changing a dependency, not a call.
 
-(router/handle {:store store :apex "kotobase.net" :surfaces {:s3 s3/handle}}
-               {:method :get :host "s3.kotobase.net" :path "/health"})
-```
+A surface absent from `:surfaces` is not served, **including its `/health`**,
+so a shell never advertises readiness for a capability it does not carry.
 
-A surface absent from `:surfaces` is not served — including its `/health`, so a
-deploy shell never advertises readiness for a surface it does not carry.
-
-**A shell that serves exactly one host does not need this namespace at all**; it
-can call its one handler directly. The router is for the combined deployment and
-for self-hosted mesh peers, where `:apex` is injectable so the same code serves
-any domain.
+A shell that owns exactly one host does not need this namespace at all; it
+can call its one handler directly.
 
 ## Test
 
 ```bash
-nbb --classpath "src:test" bin/run_tests.cljs
+nbb --classpath "src:test:<kotobase>/src" bin/run_tests.cljs
 ```
 
-No sibling checkout needed — core depends on nothing. The `:test` alias in
-`deps.edn` is the JVM compat suite only.
+`<kotobase>` is a checkout of `kotoba-lang/kotobase` — **test-only**, for the
+`kotobase.local` LocalStore oracle. Nothing under `src/` requires it.
 
-Router tests here use stub handlers on purpose: what core owns is the dispatch
-decision. The cross-surface integration test that drives real handlers stays in
-the `kotobase-protocols` facade.
+## Namespaces are unchanged
+
+They are still `kotobase.protocols.*`. Repo name and namespace need not match,
+and renaming would break every consumer for no benefit.
+
+**Do not put this repo and the `kotobase-protocols` facade on the same
+classpath** — the namespaces collide. Use one or the other.
