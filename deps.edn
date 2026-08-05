@@ -1,0 +1,11 @@
+{:paths ["src"]
+ ;; No dependencies at all — this is the bottom of the protocol stack.
+ :deps {}
+ ;; First-class runtime is nbb/cljs (repo-wide runtime priority):
+ ;;   nbb --classpath "src:test" bin/run_tests.cljs
+ :aliases
+ {:test {:extra-paths ["test"]
+         :extra-deps {io.github.cognitect-labs/test-runner
+                      {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+         :main-opts ["-m" "cognitect.test-runner"]
+         :exec-fn cognitect.test-runner.api/test}}}
