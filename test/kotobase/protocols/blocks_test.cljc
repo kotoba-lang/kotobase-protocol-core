@@ -119,3 +119,54 @@
     (let [ctx {:blocks (fake-port (atom {}))}]
       (blocks/put-block! ctx other-cid {:bytes "not really this cid"})
       (is (= "not really this cid" (:bytes (blocks/get-block ctx other-cid)))))))
+
+;; ------------------------------- why the kotobase dependency cannot be dropped
+
+(defrecord RecordStore [a])
+
+(extend-type RecordStore
+  st/IStore
+  (-put [s coll k v] (swap! (:a s) assoc-in [:docs coll k] v) v)
+  (-get [s coll k] (get-in @(:a s) [:docs coll k]))
+  (-list [s coll] (vec (keys (get-in @(:a s) [:docs coll]))))
+  (-append [s stream event]
+    (swap! (:a s) update-in [:streams stream] (fnil conj []) event) event)
+  (-read [s stream _] (vec (get-in @(:a s) [:streams stream]))))
+
+(deftest a-record-shaped-istore-is-a-supported-shape-no-structural-test-can-see
+  (testing "`deps.edn` claimed src was the bottom of the stack; it is not, and
+            this is the control for why it cannot go back to being one. The
+            bare-IStore arity is selected by `satisfies? st/IStore`. Every
+            structural stand-in for that -- `map?`, `record?`, `(:store t)`,
+            `(:blocks t)` -- gets THIS store wrong, because an IStore reached
+            by `extend-type` over a `defrecord` IS a map and carries neither
+            key. `satisfies?` gets it right, and `satisfies?` needs the
+            protocol var."
+    (let [store (->RecordStore (atom {}))]
+      (is (satisfies? st/IStore store)
+          "it is a bare IStore -- the arity kotobase-protocols-worker calls")
+      (is (map? store)
+          "and it is ALSO a map: `map?` cannot tell it from a ctx")
+      (is (nil? (:blocks store))
+          "with no :blocks port, so `map?` routing would fall through...")
+      (is (nil? (:store store))
+          "...to (doc-port nil), on a store that works perfectly today")
+      ;; and it does work today, through the document plane, on both runtimes
+      (is (= {:bytes "hi" :content-type "application/octet-stream"}
+             (blocks/put-block! store cid {:bytes "hi"})))
+      (is (= "hi" (:bytes (blocks/get-block store cid))))
+      (is (= [cid] (vec (blocks/list-cids store))))
+      (is (= [{:surface :blocks :op :put :cid cid :size 2}]
+             (st/-read store :kotobase.protocols/audit 0))))))
+
+(deftest audit-needs-the-protocol-even-when-a-blocks-port-is-carried
+  (testing "the second half of the same control. `satisfies?` is not the only
+            line that needs `kotobase.store`: `audit!` calls `st/-append`, and
+            it does so on a ctx that HAS a :blocks port. So the dependency is
+            not confined to the legacy fallback -- it is on every path that
+            carries a `:store`, which is every deployed one."
+    (let [store (local/local-store)
+          ctx {:store store :blocks (fake-port (atom {}))}]
+      (blocks/put-block! ctx cid {:bytes "b"})
+      (is (seq (st/-read store :kotobase.protocols/audit 0))
+          "bytes went to the port; the audit event still went through st/-append"))))
