@@ -1,16 +1,28 @@
 {:paths ["src"]
- ;; src has no dependencies at all — this is the bottom of the stack.
- ;; The kotobase dependency below is TEST-ONLY: the suites use
- ;; kotobase.local's LocalStore as their oracle. No namespace under src/
- ;; requires it — verified by grep at the 2026-08-05 split.
- :deps {}
+ ;; This said "src has no dependencies at all — this is the bottom of the
+ ;; stack ... verified by grep at the 2026-08-05 split", and it stopped being
+ ;; true when `kotobase/protocols/blocks.cljc` arrived after that split:
+ ;;
+ ;;   (:require [kotobase.store :as st])   ; -get -put -list -append, IStore
+ ;;
+ ;; Measured 2026-09-06: three surface repos (protocol-ipfs, -atproto,
+ ;; -pinning) require `kotobase.protocols.blocks` from src and therefore need
+ ;; `kotobase` on the classpath at runtime, with nothing saying so. A new
+ ;; consumer discovers it as `Could not find namespace: kotobase.store` partway
+ ;; through its first run, which is how this was found.
+ ;;
+ ;; Declared rather than removed. Removing it means duck-typing IStore, and
+ ;; `satisfies?` is load-bearing in `port` — that is a behaviour change to a
+ ;; live library, not a comment fix, and it belongs in its own change.
+ :deps {io.github.kotoba-lang/kotobase
+        {:git/sha "bbf57df9dde5c1869182012860129a598382e088"}}
  ;; First-class runtime is nbb/cljs (repo-wide runtime priority):
  ;;   nbb --classpath "src:test:<kotobase>/src" bin/run_tests.cljs
  :aliases
  {:test {:extra-paths ["test"]
-         :extra-deps {io.github.kotoba-lang/kotobase
-                      {:git/sha "bbf57df9dde5c1869182012860129a598382e088"}
-                      io.github.cognitect-labs/test-runner
+         ;; kotobase is a real dependency now, above. The suites additionally
+         ;; use kotobase.local's LocalStore as their oracle.
+         :extra-deps {io.github.cognitect-labs/test-runner
                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
          :main-opts ["-m" "cognitect.test-runner"]
          :exec-fn cognitect.test-runner.api/test}}}
