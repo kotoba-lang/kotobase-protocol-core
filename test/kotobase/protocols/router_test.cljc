@@ -12,7 +12,7 @@
   Labels are strings and `:path-surfaces` is `{prefix label}` — the same ctx
   shape the facade takes, so a shell can move between the two by changing a
   dependency rather than a call."
-  (:require [clojure.string :as str]
+  (:require [kotoba.lang.text :as str]
             [clojure.test :refer [deftest is testing]]
             [kotobase.protocols.router :as router]))
 
