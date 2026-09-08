@@ -32,7 +32,7 @@
 
   A surface absent from `:surfaces` is not served — including its `/health`,
   so a shell never advertises readiness for a capability it does not carry."
-  (:require [clojure.string :as str]
+  (:require [kotoba.lang.text :as str]
             [kotobase.protocols.http :as http]))
 
 (def ^:private default-prefixes
