@@ -38,7 +38,7 @@ can call its one handler directly.
 ## Test
 
 ```bash
-nbb --classpath "src:test:<kotobase>/src" bin/run_tests.cljk
+kbb --backend sci --classpath "src:test:<kotobase>/src" bin/run_tests.cljk
 ```
 
 `<kotobase>` is a checkout of `kotoba-lang/kotobase` — **test-only**, for the
