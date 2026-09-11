@@ -1,6 +1,6 @@
 ;; nbb test runner. Run from the repo root:
 ;;
-;;   nbb --classpath "src:test" bin/run_tests.cljs
+;;   nbb --classpath "src:test" bin/run_tests.cljk
 (ns run-tests
   (:require [cljs.test :as t]
             [kotobase.protocols.blocks-test]
