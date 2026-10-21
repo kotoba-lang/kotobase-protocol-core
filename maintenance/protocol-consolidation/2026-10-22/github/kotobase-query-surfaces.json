@@ -1,0 +1,45 @@
+{
+  "repository-before-archive": {
+    "id": "R_kgDOUeP3_g",
+    "databaseId": 1373894654,
+    "nameWithOwner": "kotoba-lang/kotobase-query-surfaces",
+    "isPrivate": false,
+    "isArchived": false,
+    "pushedAt": "2026-09-17T03:45:40Z",
+    "defaultBranchRef": {
+      "name": "main",
+      "target": {
+        "oid": "e925da5ac0f517b49f2e8880076ee80930f6152e"
+      }
+    },
+    "heads": {
+      "totalCount": 1,
+      "nodes": [
+        {
+          "name": "main",
+          "target": {
+            "oid": "e925da5ac0f517b49f2e8880076ee80930f6152e"
+          }
+        }
+      ]
+    },
+    "tags": {
+      "totalCount": 0,
+      "nodes": []
+    },
+    "openPRs": {
+      "totalCount": 0,
+      "nodes": []
+    },
+    "allPRs": {
+      "totalCount": 0
+    },
+    "openIssues": {
+      "totalCount": 0
+    },
+    "releases": {
+      "totalCount": 0
+    }
+  },
+  "historical-pulls": []
+}

@@ -1,5 +1,7 @@
 (ns kotobase.protocols.cid-test
-  (:require [kotoba.test :refer [deftest is testing]]
+  (:require #?(:clj [kotoba.test :refer [deftest is testing]]
+               :org.babashka/nbb [kotoba.test :refer [deftest is testing]]
+               :cljs [kotoba.test.cljs :refer-macros [deftest is testing]])
             [kotobase.protocols.cid :as cid]))
 
 (defn- str-bytes [s]
