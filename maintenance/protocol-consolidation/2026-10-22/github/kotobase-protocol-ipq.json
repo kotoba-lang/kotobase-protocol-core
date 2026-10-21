@@ -70,5 +70,55 @@
       },
       "body": "CLAUDE.md \u3092\u9664\u53bb\u3057\u3001\u5185\u5bb9\u3092 AGENTS.md \u306b\u7d71\u5408\u3057\u307e\u3057\u305f\u3002\u672c\u6587\u4e2d\u306e `CLAUDE.md` \u8a00\u53ca\u3082 `AGENTS.md` \u306b\u7f6e\u63db\u3057\u3066\u3044\u307e\u3059\u3002\n\n- \u5909\u63db\u7d50\u679c: `{'text': 2, 'renamed': 0, 'appended': 0, 'dropped': 0}`\n- \u6a5f\u68b0\u30ec\u30d3\u30e5\u30fc: \u5909\u66f4\u884c\u304c CLAUDE.md\u2192AGENTS.md \u306e\u7f6e\u63db\u306e\u307f\u3067\u3042\u308b\u3053\u3068\u3092\u78ba\u8a8d\u6e08\u307f\n\n\ud83e\udd16 Generated with [Claude Code](https://claude.com/claude-code)"
     }
-  ]
+  ],
+  "repository-after-archive": {
+    "id": "R_kgDOUQAnBg",
+    "databaseId": 1358964486,
+    "nameWithOwner": "kotoba-lang/kotobase-protocol-ipq",
+    "isPrivate": false,
+    "isArchived": true,
+    "pushedAt": "2026-09-29T20:06:29Z",
+    "defaultBranchRef": {
+      "name": "main",
+      "target": {
+        "oid": "d23bb2656c489b01b9551f1d361aefc2503a8ad8"
+      }
+    },
+    "heads": {
+      "totalCount": 1,
+      "nodes": [
+        {
+          "name": "main",
+          "target": {
+            "oid": "d23bb2656c489b01b9551f1d361aefc2503a8ad8"
+          }
+        }
+      ]
+    },
+    "tags": {
+      "totalCount": 0,
+      "nodes": []
+    },
+    "openPRs": {
+      "totalCount": 0,
+      "nodes": []
+    },
+    "allPRs": {
+      "totalCount": 2
+    },
+    "openIssues": {
+      "totalCount": 0
+    },
+    "releases": {
+      "totalCount": 0
+    }
+  },
+  "archive-readback": {
+    "repository": "kotoba-lang/kotobase-protocol-ipq",
+    "action": "archive-readback",
+    "archived": true,
+    "source-and-refs-unchanged": true,
+    "qualified-main": "d63193cd8312899b06c5fc1912dcc80a3dffe52f",
+    "at": "2026-10-21T22:30:26.407930+00:00"
+  }
 }

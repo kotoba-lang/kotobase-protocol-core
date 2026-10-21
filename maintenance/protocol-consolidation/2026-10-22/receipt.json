@@ -134,9 +134,9 @@
       ],
       "original-worktree-metadata": "worktree <github>/kotoba-lang/kotobase-protocol-ipq\nHEAD d23bb2656c489b01b9551f1d361aefc2503a8ad8\ndetached",
       "github-snapshot": "maintenance/protocol-consolidation/2026-10-22/github/kotobase-protocol-ipq.json",
-      "github-sha256": "119003ee3f1b42c86709b856dc35298e53f6aa9b2c82c6b219cad1087733370b",
-      "archived": false,
-      "archive-status": "pending-main-verification"
+      "github-sha256": "34cdf323e3d6cbfb7248cf2fe489e18fbea6a86026399d7d36ad9332f179a0cd",
+      "archived": true,
+      "archive-status": "archived-after-main-verification"
     },
     {
       "repository": "kotoba-lang/kotobase-query-surfaces",
@@ -183,9 +183,9 @@
       ],
       "original-worktree-metadata": "worktree <github>/kotoba-lang/kotobase-query-surfaces\nHEAD e925da5ac0f517b49f2e8880076ee80930f6152e\ndetached",
       "github-snapshot": "maintenance/protocol-consolidation/2026-10-22/github/kotobase-query-surfaces.json",
-      "github-sha256": "71dcd56bb4899ecd1b024b738cc3b30ac15706ce7ab49635eea2d24e14677c30",
-      "archived": false,
-      "archive-status": "pending-main-verification"
+      "github-sha256": "f50fec26685424c967ccc2458b6e8692ebcb14fdd165cf397dc1a8acb70a662a",
+      "archived": true,
+      "archive-status": "archived-after-main-verification"
     },
     {
       "repository": "kotoba-lang/kotobase-lfs",
@@ -262,12 +262,120 @@
       ],
       "original-worktree-metadata": "worktree <github>/kotoba-lang/kotobase-lfs\nHEAD f058c9c00804394967f15c441d919453ca4f0fd8\ndetached",
       "github-snapshot": "maintenance/protocol-consolidation/2026-10-22/github/kotobase-lfs.json",
-      "github-sha256": "9fbe5a00ab17aa352cb2f52961d99ad02a9500329cad9bb2d9bffdcec45125f8",
-      "archived": false,
-      "archive-status": "pending-main-verification"
+      "github-sha256": "b7153d808689cb816264fde1a53b40154c6617d9263db92fd3dbbdcdfecda25c",
+      "archived": true,
+      "archive-status": "archived-after-main-verification"
     }
   ],
   "protected-original-pin-holds": 239,
   "repository-deletions": 0,
-  "status": "Source/history preserved; actual main/host/CLI/fresh-state verification required before archive."
+  "status": "Three opt-in protocol sources archived after actual main CI/host/CLI and fresh guards; complete histories and original working trees retained; no deletion.",
+  "main-verification": {
+    "commit": "d63193cd8312899b06c5fc1912dcc80a3dffe52f",
+    "reviewed-head": "dfbec9d03ef16b690f873554d34df6c7fd7447be",
+    "tree": "e40832f1d0181fb4d088108da625558612424eeb",
+    "pull-request": "https://github.com/kotoba-lang/kotobase-protocol-core/pull/3",
+    "JVM": {
+      "projects": 3,
+      "tests": 88,
+      "assertions": 369,
+      "failures": 0,
+      "errors": 0
+    },
+    "SCI": {
+      "projects": 4,
+      "tests": 102,
+      "assertions": 444,
+      "failures": 0,
+      "errors": 0
+    },
+    "compiled-CLJS": {
+      "projects": 4,
+      "tests": 102,
+      "assertions": 444,
+      "failures": 0,
+      "errors": 0
+    },
+    "lint": {
+      "errors": 0,
+      "warnings": 11
+    },
+    "source-origins": [
+      {
+        "id": "kotoba.kotobase.protocol.ipq",
+        "admission": "not-granted",
+        "contract": "src/kotobase/protocols/http.cljk",
+        "source": "surfaces/kotoba.kotobase.protocol.ipq/src/kotobase/protocols/ipq.cljk"
+      },
+      {
+        "id": "kotoba.kotobase.protocol.query-surfaces",
+        "admission": "not-granted",
+        "contract": "src/kotobase/protocols/http.cljk",
+        "source": "surfaces/kotoba.kotobase.protocol.query-surfaces/src/kotobase/query/surfaces.cljk"
+      },
+      {
+        "id": "kotoba.kotobase.protocol.lfs",
+        "admission": "not-granted",
+        "source": "surfaces/kotoba.kotobase.protocol.lfs/src/kotobase/lfs/engine.cljk"
+      }
+    ],
+    "public-source-CLI": {
+      "IDs": 3,
+      "aliases": 6,
+      "exactLookups": 9,
+      "admission": "not-granted"
+    },
+    "source-preservation-rechecked": true,
+    "root-default-graph-unchanged": true,
+    "complete-bundles-restored-and-fsck": 3,
+    "refs": 30,
+    "historical-PRs": 2,
+    "original-file-hashes": 37,
+    "original-pin-holds-unchanged": 239,
+    "CI": {
+      "run-id": 39685963917,
+      "url": "https://github.com/kotoba-lang/kotobase-protocol-core/actions/runs/39685963917",
+      "conclusion": "success",
+      "actual-main": "d63193cd8312899b06c5fc1912dcc80a3dffe52f"
+    },
+    "Actions": "original four enabled settings unchanged; specified three remain disabled",
+    "native-live-admission-and-deployment-qualification": "separate; not claimed"
+  },
+  "post-archive-recovery": {
+    "complete-histories": 3,
+    "refs": 30,
+    "historical-PRs": 2,
+    "original-file-hashes": 37,
+    "restore-fsck": "passed",
+    "negative-controls-refused": 6
+  },
+  "Actions-readback": {
+    "kotobase-protocol-core": {
+      "enabled": true
+    },
+    "kotobase-protocol-ipq": {
+      "enabled": true
+    },
+    "kotobase-query-surfaces": {
+      "enabled": true
+    },
+    "kotobase-lfs": {
+      "enabled": true
+    },
+    "org-nist-sha2": {
+      "enabled": false
+    },
+    "security": {
+      "enabled": false
+    },
+    "kotoba-component": {
+      "enabled": false
+    }
+  },
+  "source-PR-CI": {
+    "run-id": 39685235977,
+    "url": "https://github.com/kotoba-lang/kotobase-protocol-core/actions/runs/39685235977",
+    "head": "dfbec9d03ef16b690f873554d34df6c7fd7447be",
+    "conclusion": "success"
+  }
 }
