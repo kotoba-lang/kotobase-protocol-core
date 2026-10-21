@@ -18,7 +18,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: '22' }
       - uses: DeLaGuardo/setup-clojure@13.4
-        with: { cli: latest }
+        with: { cli: latest, bb: '1.12.218' }
       - uses: actions/checkout@v4
         with:
           repository: kotoba-lang/kotoba
@@ -31,8 +31,10 @@ jobs:
           ref: 1675e6aab65d5a99e37840cc5012bc2eca6f4a07
           path: .ci/org-babashka-nbb
           persist-credentials: false
-      - run: npm ci --ignore-scripts --omit=dev
-        working-directory: .ci/org-babashka-nbb
+      - name: Verify pinned vendored SCI engine
+        run: >-
+          node .ci/org-babashka-nbb/cli.js --config scripts/source-check.nbb.edn
+          -e '(assert (= 2 (+ 1 1)))'
       - name: Source, dependency and recovery contracts
         env:
           KBB_ENGINE: ${{ github.workspace }}/.ci/org-babashka-nbb/cli.js

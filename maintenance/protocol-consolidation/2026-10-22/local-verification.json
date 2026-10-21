@@ -132,5 +132,13 @@
   },
   "Actions": "Existing settings unchanged; new workflow awaits actual PR execution",
   "retirement": "not performed; requires merged-main and fresh source/refs/WIP/239 hold guards",
-  "configuration-whitespace": "Derived EDN trailing whitespace normalized; typed data comparison rechecked. Original files and review diffs retained byte-for-byte."
+  "configuration-whitespace": "Derived EDN trailing whitespace normalized; typed data comparison rechecked. Original files and review diffs retained byte-for-byte.",
+  "CI-bootstrap": {
+    "engine-commit": "1675e6aab65d5a99e37840cc5012bc2eca6f4a07",
+    "tracked-archive-smoke": "passes without npm install; runtime import-meta-resolve is vendored in the pinned tree",
+    "Babashka": "1.12.218, matching local dependency resolver",
+    "initial-run": "https://github.com/kotoba-lang/kotobase-protocol-core/actions/runs/39684787668",
+    "initial-failure": "npm ci required a nonexistent package-lock; removed unnecessary installation and added a pinned-engine startup smoke",
+    "next-run": "pending actual execution"
+  }
 }
