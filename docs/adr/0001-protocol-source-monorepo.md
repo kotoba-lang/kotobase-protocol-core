@@ -1,7 +1,8 @@
 # ADR-0001: Independent protocol projects under the shared protocol owner
 
-Status: source placement accepted; merged-main qualification and retirement
-pending. Tracking: [JUN-267](https://linear.app/kotobalabs/issue/JUN-267).
+Status: source placement accepted and qualified on merged main; three child
+repositories archived with readbacks. Tracking:
+[JUN-267](https://linear.app/kotobalabs/issue/JUN-267).
 
 The existing `kotobase-protocol-core` owner co-locates three opt-in projects.
 Root production `src`, `deps.edn` and `nbb.edn` stay byte-identical to
@@ -104,3 +105,24 @@ enabled Actions; specified disabled repositories/workflows stay disabled.
 No repository is archived or deleted by this source commit. Retirement requires
 actual merged-main gates, public source origins, fresh remote/local WIP and
 consumer-hold guards, and explicit GitHub archive readbacks.
+
+## Merged-main and archive readback
+
+[Source PR #3](https://github.com/kotoba-lang/kotobase-protocol-core/pull/3)
+merged as `d63193cd8312899b06c5fc1912dcc80a3dffe52f` after PR CI passed.
+[Actual main CI](https://github.com/kotoba-lang/kotobase-protocol-core/actions/runs/39685963917)
+also passed every step, including source/dependency/full-history contracts,
+all declared hosts, public CLI origins and the planted failure/error control.
+The same merged-main host command completed locally: JVM88 tests/369 assertions,
+SCI and compiled Node102 tests/444 assertions each, three public source origins.
+
+Immediate guards verified all30 original refs, working trees, branches/stashes,
+archive-WIP/squash source bindings and all239 protected consumer repositories.
+The three child repositories were archived with identical IDs, default commits,
+heads, tags and source timestamps. All original physical checkouts and histories
+remain intact; no repository was deleted. The dated receipt binds the exact
+main qualification and individual GitHub archive readbacks. Source-only aliases
+do not redirect old Git coordinates to a new graph; consumers select an
+immutable owner commit and the corresponding project's `:deps/root` to adopt it.
+Amu, existing disabled Actions and all other stated ownership boundaries remain
+unchanged. The wider organization review is still in progress.
