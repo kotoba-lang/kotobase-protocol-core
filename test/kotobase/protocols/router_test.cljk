@@ -13,7 +13,9 @@
   shape the facade takes, so a shell can move between the two by changing a
   dependency rather than a call."
   (:require [kotoba.lang.text :as str]
-            [kotoba.test :refer [deftest is testing]]
+            #?(:clj [kotoba.test :refer [deftest is testing]]
+               :org.babashka/nbb [kotoba.test :refer [deftest is testing]]
+               :cljs [kotoba.test.cljs :refer-macros [deftest is testing]])
             [kotobase.protocols.router :as router]))
 
 (defn- stub [label]

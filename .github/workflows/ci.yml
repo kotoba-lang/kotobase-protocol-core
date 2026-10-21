@@ -1,0 +1,58 @@
+name: protocol source and host contracts
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  source-and-hosts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0, persist-credentials: false }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '21' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - uses: DeLaGuardo/setup-clojure@13.4
+        with: { cli: latest, bb: '1.12.218' }
+      - uses: actions/checkout@v4
+        with:
+          repository: kotoba-lang/kotoba
+          ref: f0ecb24b722664b825ab89992e9cc98c37ecaaf0
+          path: .ci/kotoba
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: kotoba-lang/org-babashka-nbb
+          ref: 1675e6aab65d5a99e37840cc5012bc2eca6f4a07
+          path: .ci/org-babashka-nbb
+          persist-credentials: false
+      - name: Verify pinned vendored SCI engine
+        run: >-
+          node .ci/org-babashka-nbb/cli.js --config scripts/source-check.nbb.edn
+          -e '(assert (= 2 (+ 1 1)))'
+      - name: Source, dependency and recovery contracts
+        env:
+          KBB_ENGINE: ${{ github.workspace }}/.ci/org-babashka-nbb/cli.js
+          KBB_HOME: ${{ github.workspace }}/.ci/kotoba
+          KBB_NO_STDLIB: '1'
+          KBB_NO_NPM: '1'
+        run: |
+          node scripts/check-protocol-sources.mjs
+          .ci/kotoba/bin/kbb --backend sci --config scripts/source-check.nbb.edn scripts/check-protocol-dependencies.cljk
+          node scripts/test-protocol-sources.mjs "$RUNNER_TEMP/source-negative"
+          node scripts/check-protocol-history.mjs "$RUNNER_TEMP/history"
+          node scripts/test-protocol-history.mjs "$RUNNER_TEMP/history-negative"
+      - name: Isolated JVM, SCI, compiled Node and public CLI source gates
+        run: >-
+          python3 scripts/test-protocol-hosts.py "$RUNNER_TEMP/protocol-hosts"
+          --kotoba "$GITHUB_WORKSPACE/.ci/kotoba"
+          --engine "$GITHUB_WORKSPACE/.ci/org-babashka-nbb/cli.js"
+      - name: Compiled reporter failure and error control
+        run: >-
+          python3 scripts/test-protocol-compiled.py "$RUNNER_TEMP/compiled-negative"
+          --project owner --plant-failure

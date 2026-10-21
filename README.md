@@ -41,8 +41,10 @@ can call its one handler directly.
 kbb --backend sci --classpath "src:test:<kotobase>/src" bin/run_tests.cljk
 ```
 
-`<kotobase>` is a checkout of `kotoba-lang/kotobase` — **test-only**, for the
-`kotobase.local` LocalStore oracle. Nothing under `src/` requires it.
+`<kotobase>` is a checkout of `kotoba-lang/kotobase`. It supplies both the
+LocalStore test oracle and the runtime `kotobase.store` protocol used by the
+legacy document-store fallback and audit path. The pinned runtime dependency
+is declared in `deps.edn`; this source placement does not remove it.
 
 ## Namespaces are unchanged
 
@@ -51,3 +53,24 @@ and renaming would break every consumer for no benefit.
 
 **Do not put this repo and the `kotobase-protocols` facade on the same
 classpath** — the namespaces collide. Use one or the other.
+
+## Opt-in protocol source projects
+
+IPQ, query composition and LFS now live as independent projects under
+`surfaces/kotoba.kotobase.protocol.*`, retaining their public Lisp namespaces,
+licenses, dependencies and release boundaries. The root router does not depend
+on or auto-register them. Source IDs and the exact old repository/coordinate
+aliases resolve with:
+
+```sh
+node scripts/protocol-sources.mjs list
+node scripts/protocol-sources.mjs resolve kotoba.kotobase.protocol.ipq
+node scripts/protocol-sources.mjs classpath kotoba-lang/kotobase-lfs
+```
+
+These commands return source paths with `admission: not-granted`. They do not
+expand the standard library catalog, grant effects, change authentication or
+publish a route. LFS's paths do not include the unrelated protocol-core root.
+See [ADR-0001](docs/adr/0001-protocol-source-monorepo.md) for the reviewed LFS
+storage compiler floor, typed dependency checks, independent host suites,
+complete history/WIP recovery and pending main/retirement gates.
